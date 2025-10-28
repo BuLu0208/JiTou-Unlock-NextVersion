@@ -69,7 +69,7 @@ A:
 
 ## Create Installer (Windows Only)
 
-1. Download and install Inno Setup: https://jrsoftware.org/isdl.php
+1. Download and install Inno Setup: https://jrsoftware.org/isdl.php (download from official website only)
 2. Open `package\InstallerScript.iss`
 3. Click compile
 4. Installer will be generated in `package` folder

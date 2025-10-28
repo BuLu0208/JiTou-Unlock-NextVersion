@@ -69,7 +69,7 @@ A:
 
 ## 创建安装程序（仅 Windows）
 
-1. 下载安装 Inno Setup：https://jrsoftware.org/isdl.php
+1. 下载安装 Inno Setup：https://jrsoftware.org/isdl.php（请从官方网站下载）
 2. 打开 `package\InstallerScript.iss`
 3. 点击编译
 4. 安装程序生成在 `package` 文件夹
