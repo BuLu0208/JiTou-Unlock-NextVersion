@@ -1,0 +1,106 @@
+# Build directories
+build/
+build-*/
+dist/
+bin/
+lib/
+*.app/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+cmake-build-*/
+*.cmake.in
+Makefile
+*.ninja
+.ninja_deps
+.ninja_log
+
+# Qt
+*.pro.user
+*.pro.user.*
+*.qmlc
+*.jsc
+*.autosave
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+*.qm
+.qmake.stash
+*.user
+
+# C++
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
+*.a
+*.lib
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.vcxproj.user
+*.VC.db
+*.VC.VC.opendb
+*.opensdf
+*.sdf
+*.ipch
+*.pdb
+*.ilk
+*.log
+*.tlog
+*.idb
+
+# Xcode
+xcuserdata/
+*.xcodeproj/
+*.xcworkspace/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Package/Installer
+*.msi
+*.exe
+package/installer.exe
+package/*.exe
+
+# Debug and Release
+Debug/
+Release/
+RelWithDebInfo/
+MinSizeRel/
+
+# Translation source files (keep in version control)
+# *.ts
+
+# Compiled translation files
+# *.qm
