@@ -19,12 +19,12 @@
     <message>
         <location filename="global/ItemsOriginal.qml" line="12"/>
         <source>Home</source>
-        <translation type="unfinished">首页</translation>
+        <translation type="unfinished">首    页</translation>
     </message>
     <message>
         <location filename="global/ItemsOriginal.qml" line="28"/>
         <source>Remove the pairing restriction</source>
-        <translation type="unfinished">移除配对限制</translation>
+        <translation type="unfinished">解除配对限制</translation>
     </message>
     <message>
         <source>No Ads</source>
@@ -233,8 +233,8 @@ Add &quot;Remove the pairing restriction&quot; Option</source>
     </message>
     <message>
         <location filename="page/T_Home.qml" line="18"/>
-        <source>mizhijitou</source>
-        <translation type="unfinished">蜜汁鸡头</translation>
+        <source>lengye</source>
+        <translation type="unfinished">冷夜</translation>
     </message>
     <message>
         <location filename="page/T_Home.qml" line="232"/>
@@ -324,7 +324,7 @@ Backup Generator</source>
     </message>
     <message>
         <source>Wechat ID : Jiejie_Cool</source>
-        <translation type="obsolete">微信id：Jiejie_Cool</translation>
+        <translation type="obsolete">微信id：BuLu-0208</translation>
     </message>
     <message>
         <location filename="page/T_Home.qml" line="268"/>
