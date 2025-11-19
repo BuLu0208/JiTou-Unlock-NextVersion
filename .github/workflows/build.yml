@@ -1,45 +1,50 @@
-name: Build Qt Project
+name: Build JiTou Unlock
 
 on:
   push:
     branches: [ main, master ]
 
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Install Qt (手动安装)
-      run: |
-        # 使用 chocolatey 安装 Qt
-        choco install qt-creator -y --no-progress
-        choco install qt6-default -y --no-progress
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: '6.5.0'
+        host: 'windows'
+        target: 'desktop'
+        arch: 'win64_msvc2019_64'
+        
+    - name: Setup MSVC
+      uses: ilammy/msvc-dev-cmd@v1
       
-    - name: Install Build Tools
+    - name: Install CMake
+      uses: jwlawson/actions-setup-cmake@v1
+      with:
+        cmake-version: '3.26.x'
+        
+    - name: Build Project
       run: |
-        choco install cmake -y --no-progress
-        choco install visualstudio2022buildtools -y --no-progress
-        choco install visualstudio2022-workload-vctools -y --no-progress
-      
-    - name: Build with CMake
-      run: |
-        echo "项目文件列表:"
+        echo "当前目录结构:"
         dir
         
+        # 直接使用CMake构建
         mkdir build
         cd build
         cmake -DCMAKE_BUILD_TYPE=Release ..
-        cmake --build . --config Release --parallel 2
+        cmake --build . --config Release --parallel 4
         
-    - name: Upload Results
+    - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: Build-Output
+        name: JiTou-Unlock
         path: |
           build/*.exe
-          build/Release/*.exe
-          build/*.dll
+          build/Release/
+          dist/
         if-no-files-found: warn
