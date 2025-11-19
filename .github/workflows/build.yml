@@ -1,21 +1,19 @@
-name: Build Language Files
+name: Build Chinese Language Files
 
 on:
   push:
     branches: [ master, main ]
-  pull_request:
-    branches: [ master, main ]
+  workflow_dispatch:  # 允许手动触发
 
 jobs:
-  build-l10n:
-    name: Build Chinese Language Files
+  build-language:
     runs-on: windows-latest
     
     steps:
-    - name: Checkout code
+    - name: Checkout repository
       uses: actions/checkout@v4
       
-    - name: Setup Qt
+    - name: Install Qt with linguistic tools
       uses: jurplel/install-qt-action@v3
       with:
         version: '6.5.0'
@@ -23,11 +21,20 @@ jobs:
         target: 'desktop'
         arch: 'win64_msvc2019_64'
         
-    - name: Build Chinese Language File
+    - name: Compile translation files
       run: |
         echo "Building Chinese language files..."
-        # 使用 Qt 的 lrelease 工具编译 .ts 文件为 .qm 文件
-        lrelease src/JiTou-Unlock-NextVersion-master_zh_CN.ts -qm src/JiTou-Unlock-NextVersion-master_zh_CN.qm
+        lrelease src/JiTou-Unlock-NextVersion-master_zh_CN.ts
         
-        echo "Verifying generated files:"
+        echo "Generated files:"
         dir src/*.qm
+        
+        echo "File details:"
+        ls -la src/*.qm
+        
+    - name: Upload Chinese language file
+      uses: actions/upload-artifact@v4
+      with:
+        name: chinese-translation-file
+        path: src/JiTou-Unlock-NextVersion-master_zh_CN.qm
+        retention-days: 30
