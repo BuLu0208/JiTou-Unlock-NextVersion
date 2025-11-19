@@ -1,44 +1,109 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-name: MSBuild
+name: Build JiTou Unlock
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ "master" ]
-
-env:
-  # Path to the solution file relative to the root of the project.
-  SOLUTION_FILE_PATH: .
-
-  # Configuration type to build.
-  # You can convert this to a build matrix if you need coverage of multiple configuration types.
-  # https://docs.github.com/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-  BUILD_CONFIGURATION: Release
-
-permissions:
-  contents: read
+    branches: [ main, master ]
+  release:
+    types: [ published ]
 
 jobs:
-  build:
+  build-windows:
+    name: Build Windows Executable
     runs-on: windows-latest
-
+    
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Qt
+      uses: jurplel/setup-qt-action@v3
+      with:
+        version: '6.5.0'
+        arch: 'x64'
+        
+    - name: Setup MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+      
+    - name: Setup CMake
+      uses: jwlawson/actions-setup-cmake@v1
+      with:
+        cmake-version: '3.26.x'
+        
+    - name: Install dependencies
+      run: |
+        choco install innosetup -y
+        
+    - name: Build using batch script
+      run: |
+        build_windows.bat
+      continue-on-error: true
+      
+    - name: Try quick build if main build fails
+      if: failure()
+      run: |
+        quick_build.bat
+        
+    - name: Manual build as fallback
+      if: failure()
+      run: |
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        cmake --build . --config Release
+        cmake --build . --config Release --target Script-DeployRelease
+        
+    - name: Create installer (optional)
+      run: |
+        if exist "package\InstallerScript.iss" (
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" package\InstallerScript.iss
+        )
+        
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: JiTou-Unlock-Windows
+        path: |
+          dist/
+          package/*.exe
+        if-no-files-found: error
 
-    - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
-
-    - name: Restore NuGet packages
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: nuget restore ${{env.SOLUTION_FILE_PATH}}
-
-    - name: Build
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      # Add additional options to the MSBuild command line here (like platform or verbosity level).
-      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
-      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
+  build-macos:
+    name: Build macOS Application
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Qt
+      uses: jurplel/setup-qt-action@v3
+      with:
+        version: '6.5.0'
+        setup-version: 'v3'
+        
+    - name: Install dependencies
+      run: |
+        brew install cmake pkg-config
+        
+    - name: Build using shell script
+      run: |
+        chmod +x build.sh
+        ./build.sh
+      continue-on-error: true
+      
+    - name: Manual build as fallback
+      if: failure()
+      run: |
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        cmake --build . --config Release
+        
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: JiTou-Unlock-macOS
+        path: dist/
+        if-no-files-found: error
