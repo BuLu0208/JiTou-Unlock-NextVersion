@@ -1,9 +1,7 @@
-name: Build Windows Executable
+name: Build Qt Project
 
 on:
   push:
-    branches: [ main, master ]
-  pull_request:
     branches: [ main, master ]
 
 jobs:
@@ -14,30 +12,34 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Setup Qt
-      uses: jurplel/setup-qt-action@v3
-      with:
-        version: '6.5.0'
-        arch: 'x64'
-        
-    - name: Setup Build Tools
-      uses: ilammy/msvc-dev-cmd@v1
-      
-    - name: Build Project
+    - name: Install Qt (手动安装)
       run: |
-        # 尝试自动构建脚本
-        if exist "build_windows.bat" (
-          build_windows.bat || quick_build.bat
-        ) else (
-          # 手动构建
-          mkdir build && cd build
-          cmake -DCMAKE_BUILD_TYPE=Release ..
-          cmake --build . --config Release
-          cmake --build . --config Release --target Script-DeployRelease
-        )
+        # 使用 chocolatey 安装 Qt
+        choco install qt-creator -y --no-progress
+        choco install qt6-default -y --no-progress
+      
+    - name: Install Build Tools
+      run: |
+        choco install cmake -y --no-progress
+        choco install visualstudio2022buildtools -y --no-progress
+        choco install visualstudio2022-workload-vctools -y --no-progress
+      
+    - name: Build with CMake
+      run: |
+        echo "项目文件列表:"
+        dir
         
-    - name: Upload Executable
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        cmake --build . --config Release --parallel 2
+        
+    - name: Upload Results
       uses: actions/upload-artifact@v4
       with:
-        name: JiTou-Unlock
-        path: dist/**/*.exe
+        name: Build-Output
+        path: |
+          build/*.exe
+          build/Release/*.exe
+          build/*.dll
+        if-no-files-found: warn
