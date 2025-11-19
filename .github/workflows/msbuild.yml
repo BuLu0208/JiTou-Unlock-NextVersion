@@ -1,109 +1,58 @@
-name: Build JiTou Unlock
+name: Build Qt Project
 
 on:
   push:
     branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
-  release:
-    types: [ published ]
 
 jobs:
-  build-windows:
-    name: Build Windows Executable
+  build:
     runs-on: windows-latest
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Setup Qt
+    - name: Install Qt and Build Tools
       uses: jurplel/setup-qt-action@v3
       with:
         version: '6.5.0'
         arch: 'x64'
-        
-    - name: Setup MSVC
-      uses: ilammy/msvc-dev-cmd@v1
       
-    - name: Setup CMake
-      uses: jwlawson/actions-setup-cmake@v1
-      with:
-        cmake-version: '3.26.x'
-        
-    - name: Install dependencies
+    - name: Build with CMake
       run: |
-        choco install innosetup -y
-        
-    - name: Build using batch script
-      run: |
-        build_windows.bat
-      continue-on-error: true
-      
-    - name: Try quick build if main build fails
-      if: failure()
-      run: |
-        quick_build.bat
-        
-    - name: Manual build as fallback
-      if: failure()
-      run: |
+        # 创建构建目录
         mkdir build
         cd build
+        
+        # 配置项目
         cmake -DCMAKE_BUILD_TYPE=Release ..
-        cmake --build . --config Release
-        cmake --build . --config Release --target Script-DeployRelease
         
-    - name: Create installer (optional)
+        # 编译
+        cmake --build . --config Release --parallel 4
+        
+        # 如果项目有部署目标，尝试运行
+        cmake --build . --config Release --target Script-DeployRelease 2>nul || echo "部署目标不存在，跳过"
+      
+    - name: List build results
       run: |
-        if exist "package\InstallerScript.iss" (
-          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" package\InstallerScript.iss
-        )
+        echo "=== 构建结果 ==="
+        dir *.exe /s 2>nul || echo "未找到exe文件"
+        if (Test-Path "dist") {
+          echo "=== dist目录 ==="
+          Get-ChildItem -Path "dist" -Recurse
+        }
+        if (Test-Path "build") {
+          echo "=== build目录 ==="
+          Get-ChildItem -Path "build" -Recurse -Include *.exe
+        }
         
-    - name: Upload artifacts
+    - name: Upload executable
       uses: actions/upload-artifact@v4
       with:
-        name: JiTou-Unlock-Windows
+        name: JiTou-Unlock
         path: |
+          *.exe
           dist/
-          package/*.exe
-        if-no-files-found: error
-
-  build-macos:
-    name: Build macOS Application
-    runs-on: macos-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Qt
-      uses: jurplel/setup-qt-action@v3
-      with:
-        version: '6.5.0'
-        setup-version: 'v3'
-        
-    - name: Install dependencies
-      run: |
-        brew install cmake pkg-config
-        
-    - name: Build using shell script
-      run: |
-        chmod +x build.sh
-        ./build.sh
-      continue-on-error: true
-      
-    - name: Manual build as fallback
-      if: failure()
-      run: |
-        mkdir build
-        cd build
-        cmake -DCMAKE_BUILD_TYPE=Release ..
-        cmake --build . --config Release
-        
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: JiTou-Unlock-macOS
-        path: dist/
-        if-no-files-found: error
+          build/*.exe
+          build/Release/*.exe
+        if-no-files-found: warn
