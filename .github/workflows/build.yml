@@ -1,0 +1,43 @@
+name: Build Windows Executable
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Qt
+      uses: jurplel/setup-qt-action@v3
+      with:
+        version: '6.5.0'
+        arch: 'x64'
+        
+    - name: Setup Build Tools
+      uses: ilammy/msvc-dev-cmd@v1
+      
+    - name: Build Project
+      run: |
+        # 尝试自动构建脚本
+        if exist "build_windows.bat" (
+          build_windows.bat || quick_build.bat
+        ) else (
+          # 手动构建
+          mkdir build && cd build
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake --build . --config Release
+          cmake --build . --config Release --target Script-DeployRelease
+        )
+        
+    - name: Upload Executable
+      uses: actions/upload-artifact@v4
+      with:
+        name: JiTou-Unlock
+        path: dist/**/*.exe
