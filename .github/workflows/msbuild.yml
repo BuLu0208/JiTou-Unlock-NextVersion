@@ -1,64 +1,62 @@
-name: Build JiTou Unlock
+name: Build Qt Project
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
 
 jobs:
   build-windows:
-    name: Build Windows Executable
     runs-on: windows-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Setup Qt
-      uses: actions/setup-qt@v3
+      uses: alex3165/setup-qt@v1
       with:
-        qt-version: '6.5.0'
-        
-    - name: Setup MSVC
-      uses: ilammy/msvc-dev-cmd@v1
-      
+        version: '6.5.0'
+
     - name: Install CMake
       uses: jwlawson/actions-setup-cmake@v1
       with:
         cmake-version: '3.26.x'
-        
+
     - name: Build Project
       run: |
-        echo "当前目录结构:"
+        echo "=== 项目文件结构 ==="
         dir
         
-        echo "尝试构建..."
-        # 先尝试项目自带的构建脚本
+        echo "=== 开始构建 ==="
+        # 首先尝试项目自带的构建脚本
         if (Test-Path "build_windows.bat") {
-          echo "使用 build_windows.bat"
+          echo "使用 build_windows.bat 构建"
           cmd /c "build_windows.bat"
         } elseif (Test-Path "quick_build.bat") {
-          echo "使用 quick_build.bat" 
+          echo "使用 quick_build.bat 构建"
           cmd /c "quick_build.bat"
         } else {
-          echo "使用手动CMake构建"
+          echo "使用手动 CMake 构建"
           mkdir build
           cd build
           cmake -DCMAKE_BUILD_TYPE=Release ..
           cmake --build . --config Release --parallel 4
         }
-        
+
     - name: Check Build Results
       run: |
-        echo "检查构建输出..."
+        echo "=== 检查构建结果 ==="
         if (Test-Path "dist") {
-          echo "dist目录内容:"
+          echo "dist 目录内容:"
           Get-ChildItem -Path "dist" -Recurse
         }
         if (Test-Path "build") {
-          echo "build目录内容:"
-          Get-ChildItem -Path "build" -Recurse -Include *.exe
+          echo "build 目录内容:"
+          Get-ChildItem -Path "build" -Recurse -Include *.exe,*.dll
         }
-        
+
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
