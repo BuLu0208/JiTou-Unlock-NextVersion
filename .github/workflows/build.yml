@@ -3,7 +3,7 @@ name: Build Chinese Language Files
 on:
   push:
     branches: [ master, main ]
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch:
 
 jobs:
   build-language:
@@ -27,10 +27,10 @@ jobs:
         lrelease src/JiTou-Unlock-NextVersion-master_zh_CN.ts
         
         echo "Generated files:"
-        dir src/*.qm
+        dir src\*.qm
         
         echo "File details:"
-        ls -la src/*.qm
+        Get-ChildItem src\*.qm | Format-Table Name, Length, LastWriteTime
         
     - name: Upload Chinese language file
       uses: actions/upload-artifact@v4
