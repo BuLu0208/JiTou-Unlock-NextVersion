@@ -12,31 +12,47 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Install Qt
+    - name: Install Qt with components
       uses: jurplel/install-qt-action@v3
       with:
         version: '6.5.0'
         host: 'windows'
         target: 'desktop'
         arch: 'win64_msvc2019_64'
+        modules: 'qtbase qttools qtdeclarative'
         
     - name: Setup MSVC
       uses: ilammy/msvc-dev-cmd@v1
       
-    - name: Install CMake
+    - name: Install CMake and dependencies
       uses: jwlawson/actions-setup-cmake@v1
       with:
         cmake-version: '3.26.x'
         
-    - name: Build Project
+    - name: Install zlib and other dependencies
+      run: |
+        choco install zlib -y
+        choco install 7zip -y
+        
+    - name: Set up environment variables
+      run: |
+        echo "QT_DIR=$QT_DIR" >> $GITHUB_ENV
+        echo "CMAKE_PREFIX_PATH=$QT_DIR\lib\cmake" >> $GITHUB_ENV
+        
+    - name: Build Project with proper includes
       run: |
         echo "当前目录结构:"
         dir
         
-        # 直接使用CMake构建
+        echo "设置环境..."
+        # 设置包含路径
+        $ZLIB_PATH = "C:\Program Files\zlib\include"
+        $QT_INCLUDE = "$env:QT_DIR\include"
+        
+        # 直接使用CMake构建，指定正确的路径
         mkdir build
         cd build
-        cmake -DCMAKE_BUILD_TYPE=Release ..
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$env:QT_DIR\lib\cmake" ..
         cmake --build . --config Release --parallel 4
         
     - name: Upload Artifacts
@@ -45,6 +61,6 @@ jobs:
         name: JiTou-Unlock
         path: |
           build/*.exe
-          build/Release/
+          build/Release/*.exe
           dist/
         if-no-files-found: warn
